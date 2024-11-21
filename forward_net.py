@@ -1,24 +1,5 @@
 import numpy as np
-
-class Sigmoid:
-    def __init__(self):
-        self.params = []
-    
-    def forward(self, x):
-        return 1 / (1 + np.exp(-x))
-    
-    def backward(self, dout):
-        y = self.output
-        return dout * (y * (1 - y))
-    
-class Affine:
-    def __init__(self, W, b):
-        self.params = [W, b]
-    
-    def forward(self, x):
-        W, b = self.params
-        out = np.dot(x, W) + b
-        return out
+from layers import Sigmoid, Affine
 
 # TwoLayerNet
 class TwoLayerNet:
