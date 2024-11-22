@@ -9,6 +9,49 @@ plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']  # Mac
 # plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']  # Windows
 plt.rcParams['axes.unicode_minus'] = False
 
+def plot_decision_boundary(model, x, t):
+    """繪製決策邊界和資料點"""
+    # 建立網格點
+    h = 0.01  # 網格步長
+    x_min, x_max = x[:, 0].min() - 0.1, x[:, 0].max() + 0.1
+    y_min, y_max = x[:, 1].min() - 0.1, x[:, 1].max() + 0.1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                        np.arange(y_min, y_max, h))
+    
+    # 對網格點進行預測
+    X = np.c_[xx.ravel(), yy.ravel()]
+    scores = model.predict(X)
+    predictions = np.argmax(scores, axis=1)
+    predictions = predictions.reshape(xx.shape)
+    
+    # 繪製決策邊界
+    plt.figure(figsize=(10, 10))
+    plt.contourf(xx, yy, predictions, alpha=0.3)
+    plt.colorbar()
+    
+    # 繪製訓練資料點
+    markers = ['o', 'x', '^']
+    for i in range(3):  # 3個類別
+        plt.scatter(x[t[:, i] == 1, 0], 
+                   x[t[:, i] == 1, 1],
+                   s=50, 
+                   marker=markers[i],
+                   label=f'類別 {i}')
+    
+    plt.title('決策邊界視覺化', fontsize=12)
+    plt.xlabel('特徵 1', fontsize=10)
+    plt.ylabel('特徵 2', fontsize=10)
+    plt.legend()
+    
+    # 保存圖片
+    try:
+        plt.savefig('decision_boundary.png', dpi=300, bbox_inches='tight')
+        print("決策邊界圖片已保存為 'decision_boundary.png'")
+    except Exception as e:
+        print(f"保存圖片時出錯：{e}")
+    
+    plt.show()
+
 def train_model():
     # 超參數設定
     max_epoch = 300
@@ -67,6 +110,9 @@ def train_model():
         accuracy_list.append(accuracy)
         print(f'準確率: {accuracy:.3f}')
 
+    # 在訓練結束後添加決策邊界視覺化
+    plot_decision_boundary(model, x, t)
+    
     # 繪製學習曲線
     plt.figure(figsize=(10, 4))
     
