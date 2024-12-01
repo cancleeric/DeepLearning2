@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from util import preprocess, create_co_matrix
+from common.util import preprocess, create_co_matrix
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):

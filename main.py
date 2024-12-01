@@ -1,5 +1,4 @@
-
-from util import preprocess , create_co_matrix
+from common.util import preprocess, create_co_matrix
 
 def main():
     text = 'You say goodbye and I say hello.'

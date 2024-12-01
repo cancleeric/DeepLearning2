@@ -1,7 +1,5 @@
 
-
 import numpy as np
-
 
 def preprocess(text):
     # Convert text to lowercase
