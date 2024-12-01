@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.util import preprocess, create_co_matrix
+from common.util import preprocess, create_co_matrix, cos_similarity
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):
@@ -34,6 +34,14 @@ class TestPreprocess(unittest.TestCase):
         ])
         
         np.testing.assert_array_equal(co_matrix, expected_co_matrix)
+
+    def test_cos_similarity(self):
+        x = np.array([1, 2, 3])
+        y = np.array([4, 5, 6])
+        similarity = cos_similarity(x, y)
+        
+        expected_similarity = 0.9746318461970762
+        self.assertAlmostEqual(similarity, expected_similarity, places=7)
 
 if __name__ == '__main__':
     unittest.main()
