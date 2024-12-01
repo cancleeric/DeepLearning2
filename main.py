@@ -1,9 +1,12 @@
 from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi
 import numpy as np
 import matplotlib.pyplot as plt
+from dataset.ptb_dataset import PTBDataset
 
 def main():
-    text = 'You say goodbye and I say hello.'
+    dataset = PTBDataset()
+    text = dataset.get_text()
+    
     corpus, word_to_id, id_to_word = preprocess(text)
     
     print("Corpus:", corpus)
