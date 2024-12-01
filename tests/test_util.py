@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.util import preprocess, create_co_matrix, cos_similarity, most_similar
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):
@@ -52,6 +52,26 @@ class TestPreprocess(unittest.TestCase):
         # 測試 most_similar 函數
         print("Most similar words to 'you':")
         most_similar('you', word_to_id, id_to_word, co_matrix, top=3)
+
+    def test_ppmi(self):
+        text = "You say goodbye and I say hello."
+        corpus, word_to_id, id_to_word = preprocess(text)
+        vocab_size = len(word_to_id)
+        co_matrix = create_co_matrix(corpus, vocab_size, window_size=1)
+        
+        ppmi_matrix = ppmi(co_matrix)
+        
+        expected_ppmi_matrix = np.array([
+            [0.        , 1.8073549, 0.        , 0.        , 0.        , 0.        , 0.       ],
+            [1.8073549 , 0.        , 0.8073549 , 0.        , 0.8073549 , 0.8073549 , 0.       ],
+            [0.        , 0.8073549 , 0.        , 1.8073549 , 0.        , 0.        , 0.       ],
+            [0.        , 0.        , 1.8073549 , 0.        , 1.8073549 , 0.        , 0.       ],
+            [0.        , 0.8073549 , 0.        , 1.8073549 , 0.        , 0.        , 0.       ],
+            [0.        , 0.8073549 , 0.        , 0.        , 0.        , 0.        , 2.807355 ],
+            [0.        , 0.        , 0.        , 0.        , 0.        , 2.807355  , 0.       ]
+        ], dtype=np.float32)
+        
+        np.testing.assert_array_almost_equal(ppmi_matrix, expected_ppmi_matrix, decimal=5)
 
 if __name__ == '__main__':
     unittest.main()

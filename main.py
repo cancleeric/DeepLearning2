@@ -1,4 +1,4 @@
-from common.util import preprocess, create_co_matrix, cos_similarity, most_similar
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi
 
 def main():
     text = 'You say goodbye and I say hello.'
@@ -13,6 +13,11 @@ def main():
     co_matrix = create_co_matrix(corpus, vocab_size, window_size=1)
     print("Co-Matrix:")
     print(co_matrix)
+    
+    # 計算 PPMI 矩陣
+    ppmi_matrix = ppmi(co_matrix)
+    print("PPMI Matrix:")
+    print(ppmi_matrix)
     
     # 計算餘弦相似度
     c0 = co_matrix[word_to_id['you']]
