@@ -1,4 +1,6 @@
 from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi
+import numpy as np
+import matplotlib.pyplot as plt
 
 def main():
     text = 'You say goodbye and I say hello.'
@@ -18,6 +20,21 @@ def main():
     ppmi_matrix = ppmi(co_matrix)
     print("PPMI Matrix:")
     print(ppmi_matrix)
+    
+    # 使用 SVD 壓縮 PPMI 矩陣
+    U, S, V = np.linalg.svd(ppmi_matrix)
+    word_vecs = U[:, :2]  # 取前兩個主成分
+    print("Word Vectors after SVD:")
+    print(word_vecs)
+    
+    # 繪製圖表
+    for word, word_id in word_to_id.items():
+        plt.annotate(word, (word_vecs[word_id, 0], word_vecs[word_id, 1]))
+    plt.scatter(word_vecs[:, 0], word_vecs[:, 1], alpha=0.5)
+    plt.xlabel('Component 1')
+    plt.ylabel('Component 2')
+    plt.title('Word Vectors after SVD')
+    plt.show()
     
     # 計算餘弦相似度
     c0 = co_matrix[word_to_id['you']]
