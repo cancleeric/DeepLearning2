@@ -1,5 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import os
+
+# 添加專案路徑
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from spiral import load_data, visualize
 
 def test_spiral_data():
@@ -43,4 +49,4 @@ def test_spiral_data():
     plt.show()
 
 if __name__ == "__main__":
-    test_spiral_data() 
+    test_spiral_data()

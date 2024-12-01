@@ -1,6 +1,11 @@
-
 import unittest
 import numpy as np
+import sys
+import os
+
+# 添加專案路徑
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from util import preprocess
 
 class TestPreprocess(unittest.TestCase):

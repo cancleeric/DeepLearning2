@@ -1,4 +1,10 @@
 import numpy as np
+import sys
+import os
+
+# 添加專案路徑
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from forward_net import TwoLayerNet
 
 def test_two_layer_net():
