@@ -43,3 +43,28 @@ def cos_similarity(x, y, eps=1e-8):
     nx = x / (np.sqrt(np.sum(x**2)) + eps)
     ny = y / (np.sqrt(np.sum(y**2)) + eps)
     return np.dot(nx, ny)
+
+#相似詞的排序
+def most_similar(query, word_to_id, id_to_word, word_matrix, top=5):
+    if query not in word_to_id:
+        print(f'{query} is not found in the vocabulary.')
+        return
+
+    print(f'\n[query] {query}')
+    query_id = word_to_id[query]
+    query_vec = word_matrix[query_id]
+
+    vocab_size = len(id_to_word)
+
+    similarity = np.zeros(vocab_size)
+    for i in range(vocab_size):
+        similarity[i] = cos_similarity(word_matrix[i], query_vec)
+    count = 0
+    for i in (-1 * similarity).argsort():
+        if id_to_word[i] == query:
+            continue
+        print(f' {id_to_word[i]}: {similarity[i]}')
+
+        count += 1
+        if count >= top:
+            return

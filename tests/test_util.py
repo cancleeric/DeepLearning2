@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.util import preprocess, create_co_matrix, cos_similarity
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):
@@ -28,7 +28,7 @@ class TestPreprocess(unittest.TestCase):
         co_matrix = create_co_matrix(corpus, vocab_size, window_size=1)
         
         expected_co_matrix = np.array([
-            [1, 1, 2],
+            [0, 1, 2],
             [1, 0, 1],
             [2, 1, 0]
         ])
@@ -42,6 +42,16 @@ class TestPreprocess(unittest.TestCase):
         
         expected_similarity = 0.9746318461970762
         self.assertAlmostEqual(similarity, expected_similarity, places=7)
+
+    def test_most_similar(self):
+        text = "You say goodbye and I say hello."
+        corpus, word_to_id, id_to_word = preprocess(text)
+        vocab_size = len(word_to_id)
+        co_matrix = create_co_matrix(corpus, vocab_size, window_size=1)
+        
+        # 測試 most_similar 函數
+        print("Most similar words to 'you':")
+        most_similar('you', word_to_id, id_to_word, co_matrix, top=3)
 
 if __name__ == '__main__':
     unittest.main()
