@@ -1,4 +1,4 @@
-from common.util import preprocess, create_co_matrix, cos_similarity
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar
 
 def main():
     text = 'You say goodbye and I say hello.'
@@ -19,6 +19,10 @@ def main():
     c1 = co_matrix[word_to_id['i']]
     similarity = cos_similarity(c0, c1)
     print(f"Cosine similarity between 'you' and 'i': {similarity}")
+    
+    # 查找與 "you" 最相似的詞
+    print("Most similar words to 'you':")
+    most_similar('you', word_to_id, id_to_word, co_matrix, top=3)
 
 if __name__ == '__main__':
     main()
