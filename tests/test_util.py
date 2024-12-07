@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi, create_contexts_target
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi, create_contexts_target, convert_one_hot
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):
@@ -95,6 +95,30 @@ class TestPreprocess(unittest.TestCase):
         # 斷言上下文與目標是否正確
         np.testing.assert_array_equal(contexts, expected_contexts)
         np.testing.assert_array_equal(target, expected_target)
+
+    def test_convert_one_hot(self):
+        corpus = np.array([0, 1, 2, 3])
+        vocab_size = 4
+        one_hot = convert_one_hot(corpus, vocab_size)
+        
+        expected_one_hot = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ], dtype=np.int32)
+        
+        np.testing.assert_array_equal(one_hot, expected_one_hot)
+
+        corpus_2d = np.array([[0, 1], [2, 3]])
+        one_hot_2d = convert_one_hot(corpus_2d, vocab_size)
+        
+        expected_one_hot_2d = np.array([
+            [[1, 0, 0, 0], [0, 1, 0, 0]],
+            [[0, 0, 1, 0], [0, 0, 0, 1]]
+        ], dtype=np.int32)
+        
+        np.testing.assert_array_equal(one_hot_2d, expected_one_hot_2d)
 
 if __name__ == '__main__':
     unittest.main()

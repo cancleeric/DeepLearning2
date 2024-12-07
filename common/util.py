@@ -88,7 +88,7 @@ def ppmi(C, verbose=False, eps = 1e-8):
                     print(f'{100*cnt/total}% done')
     return M
 
-#SVD
+
 
 #學習資料的準備工作
 #contexts and target    
@@ -105,3 +105,32 @@ def create_contexts_target(corpus, window_size=1):
         contexts.append(cs)
 
     return np.array(contexts), np.array(target)
+# one-hot encoding
+def convert_one_hot(corpus, vocab_size):
+    """
+    將給定的語料庫的單詞 ID 轉換為 one-hot 編碼的陣列。
+
+    參數:
+        corpus (np.ndarray): 輸入的單詞 ID 陣列（1D 或 2D）。
+        vocab_size (int): 詞彙表的大小。
+
+    返回:
+        np.ndarray: one-hot 編碼的陣列。
+    """
+    if corpus.ndim == 1:  # 1D 情況
+        N = corpus.shape[0]
+        one_hot = np.zeros((N, vocab_size), dtype=np.int32)
+        for idx, word_id in enumerate(corpus):
+            one_hot[idx, word_id] = 1
+
+    elif corpus.ndim == 2:  # 2D 情況
+        N, C = corpus.shape
+        one_hot = np.zeros((N, C, vocab_size), dtype=np.int32)
+        for idx_0, word_ids in enumerate(corpus):
+            for idx_1, word_id in enumerate(word_ids):
+                one_hot[idx_0, idx_1, word_id] = 1
+
+    else:
+        raise ValueError("corpus 必須是一維或二維陣列。")
+
+    return one_hot
