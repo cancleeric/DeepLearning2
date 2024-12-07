@@ -1,7 +1,7 @@
 from forward_net import TwoLayerNet
-from optimizer import SGD
+from common.optimizer import SGD
 from spiral import load_data
-from trainer import Trainer
+from common.trainer import Trainer
 from visualizer import Visualizer
 
 def main():

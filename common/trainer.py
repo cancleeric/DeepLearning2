@@ -1,5 +1,5 @@
 import numpy as np
-from optimizer import SGD
+from common.optimizer import SGD
 
 class Trainer:
     def __init__(self, model, optimizer=SGD()):
@@ -36,12 +36,21 @@ class Trainer:
                 total_loss += loss
                 loss_count += 1
                 
-                # 定期輸出學習狀況
-                if (iters+1) % eval_interval == 0 and verbose:
-                    avg_loss = total_loss / loss_count
-                    print(f'| 週期: {epoch+1} | 迭代: {iters+1}/{max_iters} | 損失: {avg_loss:.2f}')
-                    self.loss_list.append(avg_loss)
-                    total_loss, loss_count = 0, 0
+                                # 損失值記錄到 loss_list
+                avg_loss = total_loss / loss_count
+                self.loss_list.append(avg_loss)
+
+                if verbose:
+                    print(f'Epoch {epoch + 1}/{max_epoch}, Iter {iters + 1}/{max_iters}, Loss: {avg_loss:.4f}')
+                
+                total_loss, loss_count = 0, 0  # 重置損失統計
+
+                # # 定期輸出學習狀況
+                # if (iters+1) % eval_interval == 0 and verbose:
+                #     avg_loss = total_loss / loss_count
+                #     print(f'| 週期: {epoch+1} | 迭代: {iters+1}/{max_iters} | 損失: {avg_loss:.2f}')
+                #     self.loss_list.append(avg_loss)
+                #     total_loss, loss_count = 0, 0
                     
             # 計算準確率
             accuracy = self.evaluate(x, t)
@@ -67,3 +76,18 @@ class Trainer:
         accuracy = correct_count / len(x)
         return accuracy
     
+    @staticmethod
+    def remove_duplicate(params, grads):
+        """刪除重複的參數並合併梯度"""
+        unique_params = {}
+        unique_grads = {}
+        
+        for key in params.keys():
+            if key not in unique_params:
+                unique_params[key] = params[key]
+                unique_grads[key] = grads[key]
+            else:
+                unique_grads[key] += grads[key]  # 合併梯度
+        
+        return unique_params, unique_grads
+        

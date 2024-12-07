@@ -67,12 +67,31 @@ class SoftmaxWithLoss:
         self.t = None
 
     def forward(self, x, t):
+        """
+        前向傳播計算損失函數。
+
+        參數:
+            x (np.ndarray): 輸入數據。
+            t (np.ndarray): 目標標籤。
+
+        返回:
+            float: 損失值。
+        """
         self.t = t
         self.y = softmax(x)
         self.loss = cross_entropy_error(self.y, self.t)
         return self.loss
     
     def backward(self, dout=1):
+        """
+        反向傳播計算梯度。
+
+        參數:
+            dout (int): 上一層傳遞過來的梯度。
+
+        返回:
+            np.ndarray: 輸入數據的梯度。
+        """
         batch_size = self.t.shape[0]
         dx = (self.y - self.t) / batch_size
         return dx
@@ -95,4 +114,21 @@ class MatMul:
         dx = np.dot(dout, W.T)
         dW = np.dot(self.x.T, dout)
         self.grads[0][...] = dW
+        return dx
+
+class ReLU:
+    def __init__(self):
+        self.params = []
+        self.grads = []
+        self.mask = None
+
+    def forward(self, x):
+        self.mask = (x <= 0)
+        out = x.copy()
+        out[self.mask] = 0
+        return out
+
+    def backward(self, dout):
+        dout[self.mask] = 0
+        dx = dout
         return dx
