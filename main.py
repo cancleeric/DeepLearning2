@@ -7,5 +7,7 @@ def main():
     text = 'You say goodbye and I say hello.'
     display_word_vectors(text)
 
+    
+
 if __name__ == '__main__':
     main()

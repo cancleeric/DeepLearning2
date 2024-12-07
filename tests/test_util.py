@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi
+from common.util import preprocess, create_co_matrix, cos_similarity, most_similar, ppmi, create_contexts_target
 
 class TestPreprocess(unittest.TestCase):
     def test_preprocess(self):
@@ -72,6 +72,29 @@ class TestPreprocess(unittest.TestCase):
         ], dtype=np.float32)
         
         np.testing.assert_array_almost_equal(ppmi_matrix, expected_ppmi_matrix, decimal=5)
+
+    def test_create_contexts_target(self):
+        text = "You say goodbye and I say hello."
+        corpus, word_to_id, id_to_word = preprocess(text)
+        print(corpus)
+        print(id_to_word)
+        window_size = 1
+        contexts, target = create_contexts_target(corpus, window_size)
+
+        # 預期的上下文與目標
+        expected_contexts = np.array([
+            [0, 2],  
+            [1, 3],  
+            [2, 4],  
+            [3, 1],  
+            [4, 5],  
+            [1, 6],  
+        ])
+        expected_target = np.array([1, 2, 3, 4,  1, 5])
+
+        # 斷言上下文與目標是否正確
+        np.testing.assert_array_equal(contexts, expected_contexts)
+        np.testing.assert_array_equal(target, expected_target)
 
 if __name__ == '__main__':
     unittest.main()
