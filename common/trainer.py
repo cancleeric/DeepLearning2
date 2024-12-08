@@ -76,18 +76,40 @@ class Trainer:
         accuracy = correct_count / len(x)
         return accuracy
     
-    @staticmethod
-    def remove_duplicate(params, grads):
-        """刪除重複的參數並合併梯度"""
-        unique_params = {}
-        unique_grads = {}
+
+    
+    def plot_loss_accuracy(self):
+        """繪製損失和準確率曲線"""
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(12, 6))
+
+        # 繪製損失曲線
+        plt.subplot(1, 2, 1)
+        plt.plot(self.loss_list)
+        plt.title('Loss over Iterations')
+        plt.xlabel('Iterations')
+        plt.ylabel('Loss')
+
+        # 繪製準確率曲線
+        plt.subplot(1, 2, 2)
+        plt.plot(self.accuracy_list)
+        plt.title('Accuracy over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+
+        plt.tight_layout()
+        plt.show()
         
-        for key in params.keys():
-            if key not in unique_params:
-                unique_params[key] = params[key]
-                unique_grads[key] = grads[key]
-            else:
-                unique_grads[key] += grads[key]  # 合併梯度
-        
-        return unique_params, unique_grads
-        
+def remove_duplicate(params, grads):
+    """刪除重複的參數並合併梯度"""
+    unique_params = {}
+    unique_grads = {}
+    
+    for key in params.keys():
+        if key not in unique_params:
+            unique_params[key] = params[key]
+            unique_grads[key] = grads[key]
+        else:
+            unique_grads[key] += grads[key]  # 合併梯度
+    
+    return unique_params, unique_grads

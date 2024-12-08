@@ -1,26 +1,5 @@
 import numpy as np
-
-def softmax(x):
-    if x.ndim == 2:
-        x = x - x.max(axis=1, keepdims=True)
-        x = np.exp(x)
-        x /= x.sum(axis=1, keepdims=True)
-    elif x.ndim == 1:
-        x = x - np.max(x)
-        x = np.exp(x) / np.sum(np.exp(x))
-    return x
-
-def cross_entropy_error(y, t):
-    if y.ndim == 1:
-        y = y.reshape(1, y.size)
-        t = t.reshape(1, t.size)
-    
-    # 如果标签是one-hot向量，转换为正确的标签索引
-    if t.size == y.size:
-        t = t.argmax(axis=1)
-             
-    batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
+from common.functions import softmax, cross_entropy_error
 
 class Sigmoid:
     def __init__(self):
@@ -59,9 +38,10 @@ class Affine:
         self.grads[1][...] = db
         return dx
     
+    
 class SoftmaxWithLoss:
     def __init__(self):
-        self.params = []
+        self.params, self.grads = [], []
         self.loss = None
         self.y = None
         self.t = None
@@ -79,6 +59,8 @@ class SoftmaxWithLoss:
         """
         self.t = t
         self.y = softmax(x)
+        if self.t.size == self.y.size:
+            self.t = self.t.argmax(axis=1)
         self.loss = cross_entropy_error(self.y, self.t)
         return self.loss
     
@@ -93,7 +75,10 @@ class SoftmaxWithLoss:
             np.ndarray: 輸入數據的梯度。
         """
         batch_size = self.t.shape[0]
-        dx = (self.y - self.t) / batch_size
+        dx = self.y.copy()
+        dx[np.arange(batch_size), self.t] -= 1
+        dx *= dout
+        dx = dx / batch_size
         return dx
 
 
@@ -116,19 +101,21 @@ class MatMul:
         self.grads[0][...] = dW
         return dx
 
-class ReLU:
-    def __init__(self):
-        self.params = []
-        self.grads = []
-        self.mask = None
+    
+class Embedding:
+    def __init__(self, W):
+        self.params = [W]
+        self.grads = [np.zeros_like(W)]
+        self.idx = None
 
-    def forward(self, x):
-        self.mask = (x <= 0)
-        out = x.copy()
-        out[self.mask] = 0
+    def forward(self, idx):
+        W, = self.params
+        self.idx = idx
+        out = W[idx]
         return out
 
     def backward(self, dout):
-        dout[self.mask] = 0
-        dx = dout
-        return dx
+        dW, = self.grads
+        dW[...] = 0
+        np.add.at(dW, self.idx, dout)
+        return None

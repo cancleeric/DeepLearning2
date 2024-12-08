@@ -1,6 +1,6 @@
 import numpy as np
 from forward_net import TwoLayerNet
-from optimizer import SGD
+from common.optimizer import SGD
 from spiral import load_data
 import matplotlib.pyplot as plt
 
