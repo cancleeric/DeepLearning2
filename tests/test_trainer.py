@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import sys
 import os
+import matplotlib.pyplot as plt  # 添加這行
 # 添加專案路徑到模塊搜索路徑
 current_dir = os.path.dirname(__file__)
 project_root = os.path.abspath(os.path.join(current_dir, '..'))
@@ -44,6 +45,58 @@ class TestTrainer(unittest.TestCase):
     def test_evaluate(self):
         accuracy = self.trainer.evaluate(self.x, self.t)
         self.assertTrue(0 <= accuracy <= 1)
+
+    def test_batch_size_validation(self):
+        # 測試不同的批次大小
+        batch_sizes = [1, 10, 50, 100]
+        for batch_size in batch_sizes:
+            loss_list, accuracy_list = self.trainer.fit(
+                self.x, self.t, 
+                max_epoch=1, 
+                batch_size=batch_size, 
+                eval_interval=1,
+                verbose=False
+            )
+            self.assertTrue(len(loss_list) > 0)
+
+    def test_max_grad_clipping(self):
+        # 測試梯度裁剪
+        max_grads = [1.0, 5.0, 10.0]
+        for max_grad in max_grads:
+            loss_list, accuracy_list = self.trainer.fit(
+                self.x, self.t,
+                max_epoch=1,
+                batch_size=10,
+                max_grad=max_grad,
+                eval_interval=1,
+                verbose=False
+            )
+            self.assertTrue(len(loss_list) > 0)
+
+    def test_plot_loss_accuracy(self):
+        # 測試繪圖功能
+        self.trainer.fit(
+            self.x, self.t,
+            max_epoch=2,
+            batch_size=10,
+            eval_interval=1,
+            verbose=False
+        )
+        try:
+            self.trainer.plot_loss_accuracy()
+            plt.close('all')  # 修改為 close('all')
+        except Exception as e:
+            self.fail(f"plot_loss_accuracy 失敗: {str(e)}")
+
+    def test_edge_cases(self):
+        # 測試邊界情況
+        with self.assertRaises(ValueError):
+            # 測試批次大小為0的情況
+            self.trainer.fit(self.x, self.t, batch_size=0)
+        
+        with self.assertRaises(ValueError):
+            # 測試週期數為負數的情況
+            self.trainer.fit(self.x, self.t, max_epoch=-1)
 
 if __name__ == '__main__':
     unittest.main()

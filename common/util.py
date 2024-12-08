@@ -134,3 +134,15 @@ def convert_one_hot(corpus, vocab_size):
         raise ValueError("corpus 必須是一維或二維陣列。")
 
     return one_hot
+
+def clip_grads(grads, max_norm):
+    """裁剪梯度以防止梯度爆炸"""
+    total_norm = 0
+    for grad in grads:
+        total_norm += np.sum(grad ** 2)
+    total_norm = np.sqrt(total_norm)
+
+    if total_norm > max_norm:
+        rate = max_norm / (total_norm + 1e-6)
+        for grad in grads:
+            grad *= rate

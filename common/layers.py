@@ -57,11 +57,16 @@ class SoftmaxWithLoss:
         返回:
             float: 損失值。
         """
+        # self.t = t
+        # self.y = softmax(x)
+        # if self.t.size == self.y.size:
+        #     self.t = self.t.argmax(axis=1)
+        # self.loss = cross_entropy_error(self.y, self.t)
         self.t = t
-        self.y = softmax(x)
-        if self.t.size == self.y.size:
-            self.t = self.t.argmax(axis=1)
-        self.loss = cross_entropy_error(self.y, self.t)
+        self.y = 1 / (1 + np.exp(-x))
+
+        self.loss = cross_entropy_error(np.c_[1 - self.y, self.y], self.t)
+
         return self.loss
     
     def backward(self, dout=1):

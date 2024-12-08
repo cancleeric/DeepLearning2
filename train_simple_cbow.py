@@ -26,7 +26,6 @@ def test_simple_cbow():
     # 創建模型
     model = SimpleCBOW(vocab_size, hidden_size)
     optimizer = Adam()
-
     trainer = Trainer(model, optimizer)
 
     # 使用 Trainer 進行訓練

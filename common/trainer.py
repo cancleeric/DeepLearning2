@@ -1,6 +1,18 @@
 import numpy as np
 from common.optimizer import SGD
 
+# 移除 clip_grads 引入，改為直接實作
+def clip_grads(grads, max_norm):
+    total_norm = 0
+    for grad in grads.values():
+        total_norm += np.sum(grad ** 2)
+    total_norm = np.sqrt(total_norm)
+
+    rate = max_norm / (total_norm + 1e-6)
+    if rate < 1:
+        for grad in grads.values():
+            grad *= rate
+
 class Trainer:
     def __init__(self, model, optimizer=SGD()):
         self.model = model
@@ -11,7 +23,15 @@ class Trainer:
         self.accuracy_list = []
         
     def fit(self, x, t, max_epoch=300, batch_size=30, 
-            eval_interval=20, verbose=True):
+            eval_interval=20, max_grad=None, verbose=True):  # 新增 max_grad 參數
+        # 輸入驗證
+        if batch_size <= 0:
+            raise ValueError("batch_size 必須大於 0")
+        if max_epoch <= 0:
+            raise ValueError("max_epoch 必須大於 0")
+        if eval_interval <= 0:
+            raise ValueError("eval_interval 必須大於 0")
+
         """訓練模型"""
         data_size = len(x)
         max_iters = data_size // batch_size
@@ -31,27 +51,25 @@ class Trainer:
                 # 計算梯度，更新參數
                 loss = self.model.forward(batch_x, batch_t)
                 self.model.backward()
-                self.optimizer.update(self.model.params, self.model.grads)
-                
+                params, grads = remove_duplicate(self.model.params, self.model.grads)  # 刪除重複的參數並合併梯度
+                if max_grad is not None:
+                    clip_grads(grads, max_grad)  # 裁剪梯度
+                self.optimizer.update(params, grads)
+
                 total_loss += loss
                 loss_count += 1
                 
-                                # 損失值記錄到 loss_list
+                # 損失值記錄到 loss_list
                 avg_loss = total_loss / loss_count
                 self.loss_list.append(avg_loss)
 
-                if verbose:
-                    print(f'Epoch {epoch + 1}/{max_epoch}, Iter {iters + 1}/{max_iters}, Loss: {avg_loss:.4f}')
-                
-                total_loss, loss_count = 0, 0  # 重置損失統計
-
-                # # 定期輸出學習狀況
-                # if (iters+1) % eval_interval == 0 and verbose:
-                #     avg_loss = total_loss / loss_count
-                #     print(f'| 週期: {epoch+1} | 迭代: {iters+1}/{max_iters} | 損失: {avg_loss:.2f}')
-                #     self.loss_list.append(avg_loss)
-                #     total_loss, loss_count = 0, 0
-                    
+                if (iters + 1) % eval_interval == 0:
+                    avg_loss = total_loss / loss_count
+                    if verbose:
+                        print(f'| 週期: {epoch + 1} | 迭代: {iters + 1}/{max_iters} | 損失: {avg_loss:.2f}')
+                    self.loss_list.append(avg_loss)
+                    total_loss, loss_count = 0, 0  # 在這裡重置損失統計
+                        
             # 計算準確率
             accuracy = self.evaluate(x, t)
             self.accuracy_list.append(accuracy)
@@ -75,8 +93,6 @@ class Trainer:
             
         accuracy = correct_count / len(x)
         return accuracy
-    
-
     
     def plot_loss_accuracy(self):
         """繪製損失和準確率曲線"""
