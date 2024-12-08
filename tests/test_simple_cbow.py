@@ -6,7 +6,7 @@ import unittest
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from simple_cbow import SimpleCBOW
+from common.simple_cbow import SimpleCBOW
 from common.optimizer import Adam
 from common.util import preprocess, create_contexts_target
 

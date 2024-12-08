@@ -1,5 +1,10 @@
 import sys
 import numpy as np
+import sys
+import os
+
+# 添加專案路徑
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from common.optimizer import Adam
 from common.trainer import Trainer
 from common.simple_cbow import SimpleCBOW
@@ -34,7 +39,9 @@ def test_simple_cbow():
 
     # 測試詞向量
     word_vecs = model.get_word_vecs()
-    print("Word vectors:", word_vecs)
+    # print("Word vectors:", word_vecs)
+    for word_id, word in id_to_word.items():
+        print(word, word_vecs[word_id])
 
 if __name__ == "__main__":
     test_simple_cbow()
