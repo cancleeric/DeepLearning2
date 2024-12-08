@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from common.optimizer import Adam
 from common.trainer import Trainer
-from simple_cbow import SimpleCBOW
+from common.simple_cbow import SimpleCBOW
 from common.util import preprocess, create_contexts_target, convert_one_hot
 
 def test_simple_cbow():
