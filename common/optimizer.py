@@ -20,19 +20,18 @@ class Adam:
 
     def update(self, params, grads):
         if self.m is None:
-            self.m, self.v = {}, {}
-            for key, val in params.items():
-                self.m[key] = np.zeros_like(val)
-                self.v[key] = np.zeros_like(val)
+            self.m, self.v = [], []
+            for param in params:
+                self.m.append(np.zeros_like(param))
+                self.v.append(np.zeros_like(param))
 
         self.iter += 1
         lr_t = self.lr * np.sqrt(1.0 - self.beta2**self.iter) / (1.0 - self.beta1**self.iter)   
 
-        for key in params.keys():
-            self.m[key] += (1 - self.beta1) * (grads[key] - self.m[key])
-            self.v[key] += (1 - self.beta2) * (grads[key]**2 - self.v[key])
-            params[key] -= lr_t * self.m[key] / (np.sqrt(self.v[key]) + 1e-7)       
-
+        for i in range(len(params)):
+            self.m[i] += (1 - self.beta1) * (grads[i] - self.m[i])
+            self.v[i] += (1 - self.beta2) * (grads[i]**2 - self.v[i])
+            params[i] -= lr_t * self.m[i] / (np.sqrt(self.v[i]) + 1e-7)
 
 
 class AdaGrad:
@@ -42,13 +41,13 @@ class AdaGrad:
 
     def update(self, params, grads):
         if self.h is None:
-            self.h = {}
-            for key, val in params.items():
-                self.h[key] = np.zeros_like(val)
+            self.h = []
+            for param in params:
+                self.h.append(np.zeros_like(param))
 
-        for key in params.keys():
-            self.h[key] += grads[key] ** 2
-            params[key] -= self.lr * grads[key] / (np.sqrt(self.h[key]) + 1e-7)
+        for i in range(len(params)):
+            self.h[i] += grads[i] ** 2
+            params[i] -= self.lr * grads[i] / (np.sqrt(self.h[i]) + 1e-7)
     
 class Momentum:
     def __init__(self, lr=0.01, momentum=0.9):
@@ -58,11 +57,11 @@ class Momentum:
 
     def update(self, params, grads):
         if self.v is None:
-            self.v = {}
-            for key, val in params.items():
-                self.v[key] = np.zeros_like(val)
+            self.v = []
+            for param in params:
+                self.v.append(np.zeros_like(param))
 
-        for key in params.keys():
-            self.v[key] = self.momentum * self.v[key] - self.lr * grads[key]
-            params[key] += self.v[key]
+        for i in range(len(params)):
+            self.v[i] = self.momentum * self.v[i] - self.lr * grads[i]
+            params[i] += self.v[i]
 

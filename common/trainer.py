@@ -13,6 +13,23 @@ def clip_grads(grads, max_norm):
         for grad in grads.values():
             grad *= rate
 
+def remove_duplicate(params, grads):
+    """
+    刪除重複的參數並合併梯度（適用於列表形式的參數）
+    """
+    params_data = []
+    grads_data = []
+    for param, grad in zip(params, grads):
+        # 檢查是否已存在相同的參數
+        if param.data in [p.data for p in params_data]:
+            idx = [i for i, p in enumerate(params_data) if p.data is param.data][0]
+            grads_data[idx] += grad
+        else:
+            params_data.append(param)
+            grads_data.append(grad)
+    
+    return params_data, grads_data
+
 class Trainer:
     def __init__(self, model, optimizer=SGD()):
         self.model = model
@@ -51,10 +68,11 @@ class Trainer:
                 # 計算梯度，更新參數
                 loss = self.model.forward(batch_x, batch_t)
                 self.model.backward()
-                params, grads = remove_duplicate(self.model.params, self.model.grads)  # 刪除重複的參數並合併梯度
+                
+                # 直接使用模型的參數和梯度
                 if max_grad is not None:
-                    clip_grads(grads, max_grad)  # 裁剪梯度
-                self.optimizer.update(params, grads)
+                    clip_grads(self.model.grads, max_grad)
+                self.optimizer.update(self.model.params, self.model.grads)
 
                 total_loss += loss
                 loss_count += 1
@@ -115,17 +133,3 @@ class Trainer:
 
         plt.tight_layout()
         plt.show()
-        
-def remove_duplicate(params, grads):
-    """刪除重複的參數並合併梯度"""
-    unique_params = {}
-    unique_grads = {}
-    
-    for key in params.keys():
-        if key not in unique_params:
-            unique_params[key] = params[key]
-            unique_grads[key] = grads[key]
-        else:
-            unique_grads[key] += grads[key]  # 合併梯度
-    
-    return unique_params, unique_grads

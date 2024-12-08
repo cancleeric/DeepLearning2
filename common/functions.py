@@ -23,9 +23,14 @@ def cross_entropy_error(y, t):
         y = y.reshape(1, y.size)
         t = t.reshape(1, t.size)
     
-    # 如果标签是one-hot向量，转换为正确的标签索引
+    # 處理教師標籤為 one-hot 向量的情況
     if t.size == y.size:
         t = t.argmax(axis=1)
              
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
+    
+    # 確保 y 的值在有效範圍內
+    y = np.clip(y, 1e-10, 1.0)
+    
+    # 使用進階索引取得目標類別的機率
+    return -np.sum(np.log(y[np.arange(batch_size), t])) / batch_size
