@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from common.layers import SoftmaxWithLoss, MatMul
+from common.layers import SoftmaxWithLoss, MatMul, Embedding  # 添加 Embedding
 
 class TestSoftmaxWithLoss(unittest.TestCase):
     def setUp(self):
@@ -93,6 +93,87 @@ class TestMatMul(unittest.TestCase):
         dx = self.layer.backward(dout)
         expected_dx = np.dot(dout, self.W.T)
         np.testing.assert_array_almost_equal(dx, expected_dx)
+
+class TestEmbedding(unittest.TestCase):
+    def setUp(self):
+        # 創建一個詞向量矩陣，形狀為 (vocab_size=5, embedding_dim=3)
+        self.W = np.array([
+            [0.1, 0.2, 0.3],
+            [0.4, 0.5, 0.6],
+            [0.7, 0.8, 0.9],
+            [1.0, 1.1, 1.2],
+            [1.3, 1.4, 1.5]
+        ])
+        self.layer = Embedding(self.W)
+
+    def test_forward(self):
+        """測試前向傳播"""
+        # 測試單個索引
+        idx = np.array(1)
+        out = self.layer.forward(idx)
+        np.testing.assert_array_equal(out, self.W[1])
+
+        # 測試多個索引
+        idx = np.array([1, 3, 0])
+        out = self.layer.forward(idx)
+        expected = self.W[idx]
+        np.testing.assert_array_equal(out, expected)
+
+    def test_backward(self):
+        """測試反向傳播"""
+        # 前向傳播
+        idx = np.array([1, 3, 0])
+        self.layer.forward(idx)
+
+        # 反向傳播
+        dout = np.array([
+            [0.1, 0.2, 0.3],
+            [0.4, 0.5, 0.6],
+            [0.7, 0.8, 0.9]
+        ])
+        dx = self.layer.backward(dout)
+
+        # 檢查 dx 是否為 None
+        self.assertIsNone(dx)
+
+        # 檢查梯度更新是否正確
+        expected_dW = np.zeros_like(self.W)
+        expected_dW[1] += dout[0]
+        expected_dW[3] += dout[1]
+        expected_dW[0] += dout[2]
+        np.testing.assert_array_equal(self.layer.grads[0], expected_dW)
+
+    def test_forward_2d_indices(self):
+        """測試2D索引的前向傳播"""
+        idx = np.array([[1, 3], [0, 2]])
+        out = self.layer.forward(idx)
+        expected = self.W[idx]
+        np.testing.assert_array_equal(out, expected)
+        self.assertEqual(out.shape, (2, 2, 3))
+
+    def test_backward_2d_indices(self):
+        """測試2D索引的反向傳播"""
+        # 前向傳播
+        idx = np.array([[1, 3], [0, 2]])
+        self.layer.forward(idx)
+
+        # 反向傳播
+        dout = np.array([
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
+            [[0.7, 0.8, 0.9], [1.0, 1.1, 1.2]]
+        ])
+        dx = self.layer.backward(dout)
+
+        # 檢查 dx 是否為 None
+        self.assertIsNone(dx)
+
+        # 檢查梯度更新是否正確
+        expected_dW = np.zeros_like(self.W)
+        expected_dW[1] += dout[0][0]
+        expected_dW[3] += dout[0][1]
+        expected_dW[0] += dout[1][0]
+        expected_dW[2] += dout[1][1]
+        np.testing.assert_array_equal(self.layer.grads[0], expected_dW)
 
 if __name__ == '__main__':
     unittest.main()
