@@ -82,7 +82,7 @@ class TestUnigramSampler(unittest.TestCase):
     def test_target_out_of_vocab(self):
         # 測試當目標詞超出詞彙表範圍時
         invalid_target = np.array([10])  # 詞彙表大小為 4，無效目標詞
-        with self.assertRaises(IndexError):
+        with self.assertRaisesRegex(ValueError, "目標詞索引超出詞彙表範圍"):
             self.sampler.get_negative_sample(invalid_target)
 
     def test_negative_sampling_different_targets(self):
