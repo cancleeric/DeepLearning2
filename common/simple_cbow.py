@@ -1,5 +1,5 @@
 import numpy as np
-from common.layers import MatMul, SoftmaxWithLoss
+from common.layers import MatMul, SoftmaxWithLoss, Embedding
 
 class SimpleCBOW:
     def __init__(self, vocab_size, hidden_size):
@@ -9,9 +9,9 @@ class SimpleCBOW:
         W_in = 0.01 * np.random.randn(V, H).astype('f')
         W_out = 0.01 * np.random.randn(H, V).astype('f')
 
-        # 建立各層
-        self.in_layer0 = MatMul(W_in)
-        self.in_layer1 = MatMul(W_in)
+        # 將 MatMul 層替換為 Embedding 層
+        self.in_layer0 = Embedding(W_in)
+        self.in_layer1 = Embedding(W_in)
         self.out_layer = MatMul(W_out)
         self.loss_layer = SoftmaxWithLoss()
 
