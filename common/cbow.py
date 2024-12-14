@@ -10,8 +10,12 @@ from common.negative_sampling_layer import NegativeSamplingLoss
 class CBOW:
     def __init__(self, vocab_size, hidden_size, window_size, corpus):
         V, H = vocab_size, hidden_size
-        W_in = 0.01 * np.random.randn(V, H).astype('f')
-        W_out = 0.01 * np.random.randn(H, V).astype('f')
+        # W_in = 0.01 * np.random.randn(V, H).astype('f')
+        # W_out = 0.01 * np.random.randn(H, V).astype('f')
+
+        W_in = 0.01 * np.random.randn(vocab_size, hidden_size).astype('f')  # (V, H)
+        W_out = 0.01 * np.random.randn(hidden_size, vocab_size).astype('f')  # (H, V)
+
 
         self.in_layers = []
         for i in range(2 * window_size):
@@ -27,6 +31,15 @@ class CBOW:
         self.word_vecs = W_in
         
     def forward(self, contexts, target):
+
+        # 檢查 contexts 的形狀
+        if contexts.shape[1] != len(self.in_layers):
+            raise ValueError(f"contexts 的第二維大小應該是 {len(self.in_layers)}，但得到了 {contexts.shape[1]}")
+        
+        # 檢查 contexts 和 target 的 batch_size 是否一致
+        if contexts.shape[0] != target.shape[0]:
+            raise ValueError("contexts 和 target 的 batch_size 不一致")
+
         h = 0
         for i, layer in enumerate(self.in_layers):
             h += layer.forward(contexts[:, i])

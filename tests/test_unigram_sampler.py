@@ -52,5 +52,49 @@ class TestUnigramSampler(unittest.TestCase):
             # 確保負採樣的結果不包含目標詞
             self.assertTrue(np.all(neg_sample != target))
 
+    def test_sample_size_larger_than_vocab(self):
+        # 測試當 sample_size 大於詞彙表大小時的行為
+        large_sample_size = 10
+        sampler = UnigramSampler(self.corpus, self.power, large_sample_size)
+        target = np.array([1])
+        neg_sample = sampler.get_negative_sample(target)
+        
+        # 應確保輸出形狀正確且處理正確的重複抽樣邏輯
+        self.assertEqual(neg_sample.shape, (len(target), large_sample_size))
+        self.assertTrue(np.all(neg_sample >= 0))
+        self.assertTrue(np.all(neg_sample < sampler.vocab_size))
+        
+    def test_empty_corpus(self):
+        # 測試空的語料庫行為
+        empty_corpus = np.array([])
+        with self.assertRaises(ValueError):
+            UnigramSampler(empty_corpus, self.power, self.sample_size)
+            
+    def test_all_targets_same(self):
+        # 測試當所有目標詞都是相同的情況
+        target = np.array([2, 2, 2])
+        neg_sample = self.sampler.get_negative_sample(target)
+        
+        # 確保沒有負樣本等於目標詞
+        for t, samples in zip(target, neg_sample):
+            self.assertTrue(np.all(samples != t))
+    
+    def test_target_out_of_vocab(self):
+        # 測試當目標詞超出詞彙表範圍時
+        invalid_target = np.array([10])  # 詞彙表大小為 4，無效目標詞
+        with self.assertRaises(IndexError):
+            self.sampler.get_negative_sample(invalid_target)
+
+    def test_negative_sampling_different_targets(self):
+        # 測試不同目標詞是否生成正確的負樣本
+        target = np.array([0, 1, 2, 3])
+        neg_sample = self.sampler.get_negative_sample(target)
+        
+        # 確保對每個目標詞的負樣本均合法
+        for t, samples in zip(target, neg_sample):
+            self.assertTrue(np.all(samples >= 0))
+            self.assertTrue(np.all(samples < self.sampler.vocab_size))
+            self.assertTrue(np.all(samples != t))
+
 if __name__ == '__main__':
     unittest.main()
