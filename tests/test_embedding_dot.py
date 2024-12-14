@@ -6,7 +6,7 @@ import os
 # 添加專案路徑
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from negative_sampling_layer import EmbeddingDot
+from common.negative_sampling_layer import EmbeddingDot
 
 class TestEmbeddingDot(unittest.TestCase):
     def setUp(self):

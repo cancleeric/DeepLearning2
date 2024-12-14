@@ -4,7 +4,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from negative_sampling_layer import UnigramSampler
+
+from common.negative_sampling_layer import UnigramSampler
 
 class TestUnigramSampler(unittest.TestCase):
     def setUp(self):
