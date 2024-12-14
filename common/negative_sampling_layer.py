@@ -10,18 +10,14 @@ class EmbeddingDot:
         self.grads = self.embed.grads
         self.cache = None
 
-    # def forward(self, h, idx):
-    #     target_W = self.embed.forward(idx)
-    #     assert target_W.shape[1] == h.shape[1], "target_W 和 h 的 hidden_size 不匹配"
-    #     out = np.sum(target_W * h, axis=1)
-    #     self.cache = (h, target_W)
-    #     return out
-    
     def forward(self, h, idx):
         target_W = self.embed.forward(idx)  # target_W 的形狀 (batch_size, hidden_size)
         if target_W.ndim == 1:
             target_W = target_W.reshape(1, -1)  # 將一維展開為二維
-        assert target_W.shape[1] == h.shape[1], "target_W 和 h 的 hidden_size 不匹配"
+        if h.ndim == 1:
+            h = h.reshape(1, -1)  # 確保 h 也是二維
+            
+        assert target_W.shape[1] == h.shape[1], f"target_W 和 h 的 hidden_size 不匹配: {target_W.shape[1]} != {h.shape[1]}"
         out = np.sum(target_W * h, axis=1)
         self.cache = (h, target_W)
         return out
@@ -63,21 +59,6 @@ class UnigramSampler:
         self.word_p = np.power(self.word_p, power)
         self.word_p /= np.sum(self.word_p)
 
-    # def get_negative_sample(self, target):
-    #     batch_size = target.shape[0]
-    #     if not GPU:
-    #         negative_sample = np.zeros((batch_size, self.sample_size), dtype=np.int32)
-    #         for i in range(batch_size):
-    #             p = self.word_p.copy()
-    #             target_idx = target[i]
-    #             p[target_idx] = 0
-    #             p /= p.sum()
-    #             negative_sample[i, :] = np.random.choice(self.vocab_size, size=self.sample_size, replace=False, p=p)
-    #     else:
-    #         negative_sample = np.random.choice(self.vocab_size, size=(batch_size, self.sample_size), replace=True, p=self.word_p)
-    #     return negative_sample
-    
-
     def get_negative_sample(self, target):
         batch_size = target.shape[0]
         if not np.all(target < self.vocab_size):
@@ -110,21 +91,6 @@ class UnigramSampler:
         return negative_sample
     
 
-    # def get_negative_sample(self, target):
-    #     batch_size = target.shape[0]
-    #     if not np.all(target < self.vocab_size):
-    #         raise ValueError("目標詞索引超出詞彙表範圍")
-        
-    #     negative_sample = np.zeros((batch_size, self.sample_size), dtype=np.int32)
-    #     for i in range(batch_size):
-    #         p = self.word_p.copy()
-    #         target_idx = target[i]
-    #         p[target_idx] = 0
-    #         p /= np.sum(p)
-    #         negative_sample[i, :] = np.random.choice(self.vocab_size, size=self.sample_size, replace=False, p=p)
-    #     return negative_sample
-
-
 class NegativeSamplingLoss:
     def __init__(self, W, corpus, power=0.75, sample_size=5):
         self.sample_size = sample_size
@@ -142,18 +108,23 @@ class NegativeSamplingLoss:
             self.grads += layer.grads
         self.cache = None
     def forward(self, h, target):
+        if h.ndim == 1:
+            h = h.reshape(1, -1)
         batch_size = target.shape[0]
         negative_sample = self.sampler.get_negative_sample(target)
-        # 正例的前向传播
+        
+        # 正例的前向傳播
         score = self.embed_dot_layers[0].forward(h, target)
         correct_label = np.ones(batch_size, dtype=np.int32)
         loss = self.loss_layers[0].forward(score, correct_label)
-        # 负例的前向传播
+        
+        # 負例的前向傳播
         negative_label = np.zeros(batch_size, dtype=np.int32)
         for i in range(self.sample_size):
             negative_target = negative_sample[:, i]
             score = self.embed_dot_layers[1 + i].forward(h, negative_target)
             loss += self.loss_layers[1 + i].forward(score, negative_label)
+            
         return loss
     def backward(self, dout=1):
         dh = 0
@@ -162,4 +133,4 @@ class NegativeSamplingLoss:
             dh += l1.backward(ds)
         return dh
 
-    
+
